@@ -1,0 +1,3 @@
+[submodule "Assets/CrowdComm"]
+	path = Assets/CrowdComm
+	url = git@github.com:hukaidong/CrowdComm.git
