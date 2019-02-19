@@ -114,8 +114,8 @@ public class AgentMsg : MonoBehaviour
     }
 
     static public 
-    GameObject CreateAgent(Agent a_proto) {
-
+        GameObject CreateAgent(Agent a_proto)
+    {
         GameObject agentPrefab = Resources.Load("Agent") as GameObject;
         GameObject agent = Instantiate(agentPrefab);
         AgentMsg msg = agent.AddComponent<AgentMsg>() as AgentMsg;
@@ -135,7 +135,6 @@ public class AgentMsg : MonoBehaviour
                 Z = Random.Range((float)args[4], (float)args[5])};
         }
         return agent;
-
     }
 
     // Use this for initialization

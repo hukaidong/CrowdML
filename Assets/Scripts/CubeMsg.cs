@@ -6,14 +6,7 @@ using CrowdWorld.Proto;
 public class CubeMsg : MonoBehaviour {
 
     public Cube proto;
-    public Cube_Data data;
-
-    public byte[] Id
-    {
-        get { return proto.Id.ToByteArray(); }
-        set { proto.Id.CopyTo(value, 0); }
-    }
-
+    
     public Vec3 Center
     {
         get
@@ -29,11 +22,9 @@ public class CubeMsg : MonoBehaviour {
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Center = value;
             transform.position = temp;
         }
     }
-
     public Vec3 Scale
     {
         get
@@ -49,12 +40,9 @@ public class CubeMsg : MonoBehaviour {
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Scale = value;
             transform.localScale = temp;
         }
     }
-
-
     public Vec3 Forwards
     {
         get
@@ -70,9 +58,47 @@ public class CubeMsg : MonoBehaviour {
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Forward = value;
             transform.forward = temp;
         }
+    }
+    public Cube_Data Cube_Data
+    {
+        get
+        {
+            Cube_Data temp = new Cube_Data {
+                Center = Center,
+                Scale = Scale,
+                Forward = Forwards
+            };
+            return temp;
+        }
+        set
+        {
+            Center = value.Center != null && value.Center.HasValue ? value.Center : Center;
+            Scale = value.Scale != null && value.Scale.HasValue ? value.Scale : Scale;
+            Forwards = value.Forward != null && value.Forward.HasValue ? value.Forward : Forwards;
+        }
+    }
+    public Cube Proto_Data
+    {
+        get { return proto; }
+        set
+        {
+            proto = value;
+            Cube_Data = value.Data;
+        }
+    }
+    
+    static public
+        GameObject CreateCube(Cube c_proto)
+    {
+        GameObject cubePrefab = Resources.Load("Cube") as GameObject;
+        GameObject cube = Instantiate(cubePrefab);
+        CubeMsg msg = cube.AddComponent<CubeMsg>() as CubeMsg;
+        msg.Proto_Data = c_proto;
+        cube.name = "cube_" + c_proto.Id.ToBase64();
+        
+        return cube;
     }
 
     // Use this for initialization
