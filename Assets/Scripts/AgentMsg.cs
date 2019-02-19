@@ -1,15 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 using CrowdWorld.Proto;
+using System.Linq;
 
 public class AgentMsg : MonoBehaviour
 {
-    public Agent proto;
-    public Agent_Data data;
-    Rigidbody rb;
-    NavMeshAgent agt;
+    private Agent proto;
+    protected Rigidbody rb;
+    protected NavMeshAgent agt;
 
     public Vec3 Velocity
     {
@@ -26,11 +24,9 @@ public class AgentMsg : MonoBehaviour
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Velocity = value;
             rb.velocity = temp;
         }
     }
-
     public Vec3 Location
     {
         get
@@ -46,11 +42,9 @@ public class AgentMsg : MonoBehaviour
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Location = value;
             transform.position = temp;
         }
     }
-
     public Vec3 Forwards
     {
         get
@@ -66,11 +60,9 @@ public class AgentMsg : MonoBehaviour
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Forwards = value;
             transform.forward = temp;
         }
     }
-
     public Vec3 Target
     {
         get
@@ -86,13 +78,9 @@ public class AgentMsg : MonoBehaviour
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            data.Target = value;
             agt.destination = temp;
         }
     }
-
-
-    // Update is called once per frame
     public Agent_Data Agent_Data
     {
         get
@@ -108,11 +96,45 @@ public class AgentMsg : MonoBehaviour
         }
         set
         {
-            Velocity = value.Velocity;
-            Location = value.Location;
-            Forwards = value.Forwards;
-            Target = value.Target;
+            Velocity = value.Velocity != null && value.Velocity.HasValue ? value.Velocity : Velocity;
+            Location = value.Location != null && value.Location.HasValue ? value.Location : Location;
+            Forwards = value.Forwards != null && value.Forwards.HasValue ? value.Forwards : Forwards;
+            Target   = value.Target   != null && value.Target.HasValue ? value.Target : Target;
         }
+
+    }
+    public Agent Proto_Data
+    {
+        get { return proto; }
+        set
+        {
+            proto = value;
+            Agent_Data = value.Data.Last();
+        }
+    }
+
+    static public 
+    GameObject CreateAgent(Agent a_proto) {
+
+        GameObject agentPrefab = Resources.Load("Agent") as GameObject;
+        GameObject agent = Instantiate(agentPrefab);
+        AgentMsg msg = agent.AddComponent<AgentMsg>() as AgentMsg;
+        msg.rb = agent.GetComponent<Rigidbody>() as Rigidbody;
+        msg.agt = agent.GetComponent<NavMeshAgent>() as NavMeshAgent;
+        msg.Proto_Data = a_proto;
+        agent.name = a_proto.Nickname == "" ? a_proto.Nickname : a_proto.Id.ToBase64();
+        
+        if (a_proto.Query.Count > 0)
+        {
+            var args = (from query in a_proto.Query
+                       where query.Name == "regionBounds" select query.Args)
+                       .First();
+            msg.Location = new Vec3 {
+                X = Random.Range((float)args[0], (float)args[1]),
+                Y = 0,
+                Z = Random.Range((float)args[4], (float)args[5])};
+        }
+        return agent;
 
     }
 
