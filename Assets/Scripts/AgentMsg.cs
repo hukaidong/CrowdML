@@ -51,9 +51,9 @@ public class AgentMsg : MonoBehaviour
         {
             Vec3 temp = new Vec3
             {
-                X = transform.forward.x, 
-                Y = transform.forward.y, 
-                Z = transform.forward.z, 
+                X = transform.forward.x,
+                Y = transform.forward.y,
+                Z = transform.forward.z,
             };
             return temp;
         }
@@ -99,19 +99,21 @@ public class AgentMsg : MonoBehaviour
             Velocity = value.Velocity != null && value.Velocity.HasValue ? value.Velocity : Velocity;
             Location = value.Location != null && value.Location.HasValue ? value.Location : Location;
             Forwards = value.Forwards != null && value.Forwards.HasValue ? value.Forwards : Forwards;
-            Target   = value.Target   != null && value.Target.HasValue ? value.Target : Target;
+            Target = value.Target != null && value.Target.HasValue ? value.Target : Target;
         }
 
     }
     public Agent Proto_Data
     {
         get { return proto; }
-        set
-        {
+        set {
             proto = value;
             Agent_Data = value.Data.Last();
         }
     }
+
+    public void OnReqUpdate(Agent agt) { }
+    public void OnRepUpdate(ref World world) { }
 
     static public 
         GameObject CreateAgent(Agent a_proto)

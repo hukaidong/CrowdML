@@ -1,42 +1,54 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using Google.Protobuf;
+using CrowdWorld;
+using CrowdWorld.Proto;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
-using NetMQ;
-using ByteComm;
 
-public class Raven : MonoBehaviour {
-
+public class Raven : MonoBehaviour {	
     private const string sockname = "tcp://*:6566";
-    private const string client_sockname = "tcp://localhost:6566";
-    private ByteServer server;
-    private ByteClient client;
+	private SpinServer server;
+	private bool shouldReply;
+
+    public World RepWorld;
 
 	// Use this for initialization
 	void Start () {
-        Debug.Log("starting");
-        server = new ByteServer(sockname);
-        //client = new ByteClient(client_sockname);
-        //client.Send_String("Hello");
-        //string recv = server.Recv_String();
-        //Debug.Log("I recieved " + recv);
-        //server.Send_String($"From Unity, I got {recv}");
-        //recv = client.Recv_String();
-        //Debug.Log(recv);
-        //client.Close();
-        server.Close();
-        NetMQConfig.Cleanup();
+        server = new SpinServer(sockname);
+		server.Start ();
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        Debug.Log("Sending msg");
+		if (shouldReply) {
+			HandleRep (out server.RepProto);
+			server.RepReady = true;
+			shouldReply = false;
+		}
 
-        //Debug.Log(client.Send_And_Recv("hello"));
-
+		if (server.ReqReady) {
+			HandleReq (server.ReqProto);
+			shouldReply = true;
+		}
     }
+
+	void HandleReq(byte[] reqproto) {
+		Debug.Log ($" I got {reqproto.ToString()} ");
+	}
+
+	void HandleRep(out byte[] repproto) {
+        repproto = RepWorld.ToByteArray();
+	}
+
+
+
+
 
     void OnApplicationQuit()
     {
+		server.Stop ();
     }
 }
+
+
+

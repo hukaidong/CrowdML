@@ -88,7 +88,10 @@ public class CubeMsg : MonoBehaviour {
             Cube_Data = value.Data;
         }
     }
-    
+
+    public void OnReqUpdate(Cube cube) { }
+    public void OnRepUpdate(ref World world) { }
+
     static public
         GameObject CreateCube(Cube c_proto)
     {

@@ -18,7 +18,6 @@ public class WorldCreater : MonoBehaviour {
         // byte[] data = Convert.FromBase64String(Data.Data_base64_office);
         byte[] data = Convert.FromBase64String(Data.Data_base64_fourways);
         World w = World.Parser.ParseFrom(data);
-        Debug.Log(w.Agents.Count());
         foreach (var agent in w.Agents.ToList() )
         {
             AgentMsg.CreateAgent(agent);
