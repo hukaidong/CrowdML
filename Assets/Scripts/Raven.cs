@@ -6,8 +6,9 @@ using UnityEngine;
 public class Raven : MonoBehaviour
 {
     private const string sockname = "tcp://*:6566";
-    private SpinServer server;
+
     private bool shouldReply;
+    private SpinServer server;
     private PreWorldUpdate preupdate;
     private PostWorldUpdate postupdate;
 
@@ -17,30 +18,24 @@ public class Raven : MonoBehaviour
     private void Start()
     {
         server = new SpinServer(sockname);
-        server.Start();
         preupdate = GetComponent<PreWorldUpdate>();
         postupdate = GetComponent<PostWorldUpdate>();
+
+        server.Start();
     }
 
-    private void FixedUpdate()
+
+    private void WorldCreate()
     {
-        if (shouldReply)
+        foreach (Agent agent in ReqWorld.Agents)
         {
-            HandleRep(out server.RepProto);
-            server.RepReady = true;
-            shouldReply = false;
+            AgentMsg.CreateAgent(agent);
         }
 
-        if (server.ReqReady)
+        foreach (Cube cube in ReqWorld.Cubes)
         {
-            HandleReq(server.ReqProto);
-            shouldReply = true;
+            CubeMsg.CreateCube(cube);
         }
-    }
-
-    private void WorldCreater()
-    {
-
     }
 
     private void HandleReq(byte[] reqproto)
@@ -49,9 +44,9 @@ public class Raven : MonoBehaviour
         ReqWorld = World.Parser.ParseFrom(reqproto);
         if (gconfig == Config_Type.Create)
         {
-            WorldCreater();
+            WorldCreate();
         }
-            else
+        else
         {
             foreach (Agent agt in ReqWorld.Agents)
             {
@@ -92,7 +87,21 @@ public class Raven : MonoBehaviour
         postupdate.OnRepUpdate();
         repproto = RepWorld.ToByteArray();
     }
+    private void FixedUpdate()
+    {
+        if (shouldReply)
+        {
+            HandleRep(out server.RepProto);
+            server.RepReady = true;
+            shouldReply = false;
+        }
 
+        if (server.ReqReady)
+        {
+            HandleReq(server.ReqProto);
+            shouldReply = true;
+        }
+    }
     private void OnApplicationQuit()
     {
         server.Stop();
