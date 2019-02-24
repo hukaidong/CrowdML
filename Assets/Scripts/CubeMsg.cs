@@ -1,12 +1,13 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CrowdWorld.Proto;
 
 public class CubeMsg : MonoBehaviour {
 
-    public Cube proto;
-    
+    private Cube _proto;
+    private bool _data_changed;
+
     public Vec3 Center
     {
         get
@@ -23,6 +24,7 @@ public class CubeMsg : MonoBehaviour {
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             transform.position = temp;
+            _data_changed = true;
         }
     }
     public Vec3 Scale
@@ -41,6 +43,7 @@ public class CubeMsg : MonoBehaviour {
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             transform.localScale = temp;
+            _data_changed = true;
         }
     }
     public Vec3 Forwards
@@ -59,6 +62,7 @@ public class CubeMsg : MonoBehaviour {
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             transform.forward = temp;
+            _data_changed = true;
         }
     }
     public Cube_Data Cube_Data
@@ -81,16 +85,55 @@ public class CubeMsg : MonoBehaviour {
     }
     public Cube Proto_Data
     {
-        get { return proto; }
+        get { return _proto; }
         set
         {
-            proto = value;
+            _proto = value;
             Cube_Data = value.Data;
         }
     }
 
-    public void OnReqUpdate(Cube cube) { }
-    public void OnRepUpdate(ref World world) { }
+    public void OnReqUpdate(Cube cube)
+    {
+        switch (cube.Config)
+        {
+            case Config_Type.None:
+            case Config_Type.Current: break;
+            case Config_Type.Query:
+                HandleQuery(cube);
+                break;
+            case Config_Type.Update:
+                Proto_Data = cube;
+                break;
+            default:
+                throw new NotImplementedException("Unexcepted State");
+        }
+
+    }
+    public void OnRepUpdate(ref World world)
+    {
+        if (world.Config.Equals(Config_Type.Current) || _data_changed)
+        {
+            world.Cubes.Add(_proto);
+        }
+        else 
+        {
+            switch (_proto.Config)
+            {
+                case Config_Type.Current:
+                    world.Cubes.Add(_proto);
+                    break;
+                default: break;
+            }
+        }
+        _proto.Config = Config_Type.None;
+        _data_changed = false;
+    }
+
+    private void HandleQuery(Cube cube)
+    {
+        throw new NotImplementedException("Function Not Supported Yet");
+    }
 
     static public
         GameObject CreateCube(Cube c_proto)
@@ -105,6 +148,7 @@ public class CubeMsg : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start ()
+    {
     }
 }

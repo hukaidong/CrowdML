@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using CrowdWorld.Proto;
+using System;
 using System.Linq;
 
 public class AgentMsg : MonoBehaviour
 {
-    private Agent proto;
+    private Agent _proto;
+    private bool _data_changed;
     protected Rigidbody rb;
     protected NavMeshAgent agt;
 
@@ -25,6 +27,7 @@ public class AgentMsg : MonoBehaviour
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             rb.velocity = temp;
+            _data_changed = true;
         }
     }
     public Vec3 Location
@@ -43,6 +46,7 @@ public class AgentMsg : MonoBehaviour
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             transform.position = temp;
+            _data_changed = true;
         }
     }
     public Vec3 Forwards
@@ -61,6 +65,7 @@ public class AgentMsg : MonoBehaviour
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             transform.forward = temp;
+            _data_changed = true;
         }
     }
     public Vec3 Target
@@ -79,6 +84,7 @@ public class AgentMsg : MonoBehaviour
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
             agt.destination = temp;
+            _data_changed = true;
         }
     }
     public Agent_Data Agent_Data
@@ -105,15 +111,59 @@ public class AgentMsg : MonoBehaviour
     }
     public Agent Proto_Data
     {
-        get { return proto; }
+        get { return _proto; }
         set {
-            proto = value;
+            _proto = value;
             Agent_Data = value.Data.Last();
         }
     }
 
-    public void OnReqUpdate(Agent agt) { }
-    public void OnRepUpdate(ref World world) { }
+    public void OnReqUpdate(Agent agt)
+    {
+        switch (agt.Config)
+        {
+            case Config_Type.None:
+                break;
+            case Config_Type.Current:
+                break;
+            case Config_Type.History:
+                goto case Config_Type.Hybrid;
+            case Config_Type.Hybrid:
+                throw new NotImplementedException("Function Not Supported Yet");
+            case Config_Type.Query:
+                HandleQuery(agt);
+                break;
+            case Config_Type.Update:
+                Proto_Data = agt;
+                break;
+            default:
+                throw new NotImplementedException("Unexcepted State");
+        }
+
+    }
+    public void OnRepUpdate(ref World world)
+    {
+        switch (_proto.Config)
+        {
+            case Config_Type.None:
+                break;
+            case Config_Type.Current:
+                world.Agents.Add(_proto);
+                break;
+            default:
+                if (_data_changed)
+                {
+                    world.Agents.Add(_proto);
+                }
+                break;
+        }
+        _proto.Config = Config_Type.None;
+        _data_changed = false;
+    }
+    private void HandleQuery(Agent agt)
+    {
+        throw new NotImplementedException("HandleQuery Not available yet");
+    }
 
     static public 
         GameObject CreateAgent(Agent a_proto)
@@ -132,9 +182,9 @@ public class AgentMsg : MonoBehaviour
                        where query.Name == "regionBounds" select query.Args)
                        .First();
             msg.Location = new Vec3 {
-                X = Random.Range((float)args[0], (float)args[1]),
+                X = UnityEngine.Random.Range((float)args[0], (float)args[1]),
                 Y = 0,
-                Z = Random.Range((float)args[4], (float)args[5])};
+                Z = UnityEngine.Random.Range((float)args[4], (float)args[5])};
         }
         return agent;
     }
@@ -144,5 +194,13 @@ public class AgentMsg : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         agt = GetComponent<NavMeshAgent>();
+    }
+
+    private void FixedUpdate()
+    {
+        if (!rb.isKinematic)
+        {
+            _data_changed = true;
+        }
     }
 }

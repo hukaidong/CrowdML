@@ -7,7 +7,7 @@ public class PostWorldUpdate : MonoBehaviour {
     public World RepWorld;
     public delegate void RepUpdateHandler(ref World world);
     public event RepUpdateHandler RepUpdate;
-    protected virtual void OnRepUpdate()
+    public virtual void OnRepUpdate()
     {
         RepUpdate?.Invoke(ref RepWorld);
     }
