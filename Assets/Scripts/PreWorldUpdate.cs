@@ -5,18 +5,22 @@ using CrowdWorld.Proto;
 
 public class PreWorldUpdate : MonoBehaviour {
     
-    public delegate void ReqUpdateHandler<T>(object source, T proto);
+    public delegate void ReqUpdateHandler<T>(T proto);
     public Dictionary<string, ReqUpdateHandler<Agent>> AgentReqUpdate;
     public virtual void OnAgtReqUpdate(Agent agt)
     {
-        AgentReqUpdate[agt.Id.ToBase64()]?.Invoke(this, agt);
+        AgentReqUpdate[agt.Id.ToBase64()]?.Invoke(agt);
     }
     public Dictionary<string, ReqUpdateHandler<Cube>> CubeReqUpdate;
     public virtual void OnCubeReqUpdate(Cube cube)
     {
-        CubeReqUpdate[cube.Id.ToBase64()]?.Invoke(this, cube);
+        CubeReqUpdate[cube.Id.ToBase64()]?.Invoke(cube);
     }
-
+    private void Start()
+    {
+        AgentReqUpdate = new Dictionary<string, ReqUpdateHandler<Agent>>();
+        CubeReqUpdate = new Dictionary<string, ReqUpdateHandler<Cube>>();
+    }
     // Update is called once per frame
     void FixUpdate () {
 		

@@ -99,6 +99,8 @@ public class CubeMsg : MonoBehaviour {
         {
             case Config_Type.None:
             case Config_Type.Current: break;
+            case Config_Type.Create:
+                _data_changed = true; break;
             case Config_Type.Query:
                 HandleQuery(cube);
                 break;
@@ -106,7 +108,7 @@ public class CubeMsg : MonoBehaviour {
                 Proto_Data = cube;
                 break;
             default:
-                throw new NotImplementedException("Unexcepted State");
+                throw new NotImplementedException($"{cube.Config.ToString()}, Unexcepted State");
         }
 
     }
@@ -136,14 +138,16 @@ public class CubeMsg : MonoBehaviour {
     }
 
     static public
-    GameObject CreateCube(Cube c_proto)
+    CubeMsg CreateCube(Raven raven, Cube c_proto)
     {
         GameObject cubePrefab = Resources.Load("Cube") as GameObject;
         GameObject cube = Instantiate(cubePrefab);
         CubeMsg msg = cube.AddComponent<CubeMsg>() as CubeMsg;
         msg.Proto_Data = c_proto;
         cube.name = "cube_" + c_proto.Id.ToBase64();
-        
-        return cube;
+        raven.Preupdate.CubeReqUpdate.Add(c_proto.Id.ToBase64(), msg.OnReqUpdate);
+        raven.Postupdate.RepUpdate += msg.OnRepUpdate;
+        cube.transform.parent = raven.transform;
+        return msg;
     }
 }

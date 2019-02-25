@@ -171,6 +171,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de5d66ed7ad194b7fb3ac9faefb1d860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Preupdate: {fileID: 111707296}
+  Postupdate: {fileID: 111707295}
+  m_NavMesh: {fileID: 23800000, guid: a8b739e59108b4a3b89d5e7e73cb754b, type: 2}
 --- !u!23 &111707298
 MeshRenderer:
   m_ObjectHideFlags: 0

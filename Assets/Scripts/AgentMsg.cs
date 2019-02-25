@@ -125,6 +125,9 @@ public class AgentMsg : MonoBehaviour
         {
             case Config_Type.None:
                 break;
+            case Config_Type.Create:
+                _data_changed = true;
+                break;
             case Config_Type.Current:
                 break;
             case Config_Type.History:
@@ -138,7 +141,7 @@ public class AgentMsg : MonoBehaviour
                 Proto_Data = agt;
                 break;
             default:
-                throw new NotImplementedException("Unexcepted State");
+                throw new NotImplementedException($"{agt.Config.ToString()}, Unexcepted State");
         }
 
     }
@@ -148,6 +151,8 @@ public class AgentMsg : MonoBehaviour
         {
             case Config_Type.None:
                 break;
+            case Config_Type.Create:
+                goto case Config_Type.Create;
             case Config_Type.Current:
                 Agent temp = new Agent()
                 {
@@ -176,7 +181,7 @@ public class AgentMsg : MonoBehaviour
         throw new NotImplementedException("HandleQuery Not available yet");
     }
 
-    static public GameObject CreateAgent(Agent a_proto)
+    static public AgentMsg CreateAgent(Raven raven, Agent a_proto)
     {
         GameObject agentPrefab = Resources.Load("Agent") as GameObject;
         GameObject agent = Instantiate(agentPrefab);
@@ -184,7 +189,7 @@ public class AgentMsg : MonoBehaviour
         msg.rb = agent.GetComponent<Rigidbody>() as Rigidbody;
         msg.agt = agent.GetComponent<NavMeshAgent>() as NavMeshAgent;
         msg.Proto_Data = a_proto;
-        agent.name = a_proto.Nickname == "" ? a_proto.Nickname : a_proto.Id.ToBase64();
+        agent.name = (a_proto.Nickname == null) ? a_proto.Nickname : "Agent_"+a_proto.Id.ToBase64();
         
         if (a_proto.Query.Count > 0)
         {
@@ -197,7 +202,9 @@ public class AgentMsg : MonoBehaviour
                 Z = UnityEngine.Random.Range((float)args[4], (float)args[5])};
         }
         msg.Proto_Data.Query.Clear();
-        return agent;
+        raven.Preupdate.AgentReqUpdate.Add(a_proto.Id.ToBase64(), msg.OnReqUpdate);
+        raven.Postupdate.RepUpdate += msg.OnRepUpdate; 
+        return msg;
         
     }
 
