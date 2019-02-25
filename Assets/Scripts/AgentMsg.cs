@@ -147,12 +147,13 @@ public class AgentMsg : MonoBehaviour
     }
     public void OnRepUpdate(ref World world)
     {
+        Debug.Log("Agent Fire!");
         switch (_proto.Config)
         {
             case Config_Type.None:
                 break;
             case Config_Type.Create:
-                goto case Config_Type.Create;
+                goto case Config_Type.Current;
             case Config_Type.Current:
                 Agent temp = new Agent()
                 {

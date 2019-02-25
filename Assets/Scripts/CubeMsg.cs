@@ -114,6 +114,7 @@ public class CubeMsg : MonoBehaviour {
     }
     public void OnRepUpdate(ref World world)
     {
+        Debug.Log("Cube fire!");
         if (world.Config.Equals(Config_Type.Current) || _data_changed)
         {
             world.Cubes.Add(_proto);

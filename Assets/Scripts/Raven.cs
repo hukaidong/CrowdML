@@ -115,8 +115,8 @@ public class Raven : MonoBehaviour
         if (server.ReqReady)
         {
             server.ReqReady = false;
-            shouldReply = false;
             HandleReq(server.ReqProto);
+            shouldReply = true;
         }
     }
     private void OnApplicationQuit()
