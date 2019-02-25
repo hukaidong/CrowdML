@@ -2,6 +2,7 @@
 using CrowdWorld.Proto;
 using Google.Protobuf;
 using UnityEngine;
+using System.Threading;
 
 public class Raven : MonoBehaviour
 {
@@ -40,8 +41,12 @@ public class Raven : MonoBehaviour
 
     private void HandleReq(byte[] reqproto)
     {
-        Config_Type gconfig = ReqWorld.Config;
         ReqWorld = World.Parser.ParseFrom(reqproto);
+        Config_Type gconfig = ReqWorld.Config;
+        if (gconfig == Config_Type.Reset)
+        { 
+            Application.Quit();
+        }
         if (gconfig == Config_Type.Create)
         {
             WorldCreate();
@@ -84,16 +89,18 @@ public class Raven : MonoBehaviour
 
     private void HandleRep(out byte[] repproto)
     {
-        postupdate.OnRepUpdate();
+        RepWorld = new World();
+        postupdate.OnRepUpdate(ref RepWorld);
         repproto = RepWorld.ToByteArray();
+        Debug.Log(RepWorld.ToString());
     }
     private void FixedUpdate()
     {
         if (shouldReply)
         {
+            shouldReply = false;
             HandleRep(out server.RepProto);
             server.RepReady = true;
-            shouldReply = false;
         }
 
         if (server.ReqReady)

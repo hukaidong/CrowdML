@@ -8,6 +8,7 @@ public class AgentMsg : MonoBehaviour
 {
     private Agent _proto;
     private bool _data_changed;
+    private Agent_Data _detailchanged;
     protected Rigidbody rb;
     protected NavMeshAgent agt;
 
@@ -91,12 +92,12 @@ public class AgentMsg : MonoBehaviour
     {
         get
         {
-            Agent_Data temp = new Agent_Data
+            Agent_Data temp = new Agent_Data()
             {
                 Velocity = Velocity,
                 Location = Location,
                 Forwards = Forwards,
-                Target = Target
+                Target = Target,
             };
             return temp;
         }
@@ -127,7 +128,7 @@ public class AgentMsg : MonoBehaviour
             case Config_Type.Current:
                 break;
             case Config_Type.History:
-                goto case Config_Type.Hybrid;
+                break;
             case Config_Type.Hybrid:
                 throw new NotImplementedException("Function Not Supported Yet");
             case Config_Type.Query:
@@ -148,6 +149,15 @@ public class AgentMsg : MonoBehaviour
             case Config_Type.None:
                 break;
             case Config_Type.Current:
+                Agent temp = new Agent()
+                {
+                    Id = _proto.Id,
+                    Timestamp = Time.frameCount
+                };
+                temp.Data.Add(Agent_Data);
+                world.Agents.Add(temp);
+                break;
+            case Config_Type.History:
                 world.Agents.Add(_proto);
                 break;
             default:
@@ -160,13 +170,13 @@ public class AgentMsg : MonoBehaviour
         _proto.Config = Config_Type.None;
         _data_changed = false;
     }
-    private void HandleQuery(Agent agt)
+
+    private void HandleQuery(Agent proto)
     {
         throw new NotImplementedException("HandleQuery Not available yet");
     }
 
-    static public 
-        GameObject CreateAgent(Agent a_proto)
+    static public GameObject CreateAgent(Agent a_proto)
     {
         GameObject agentPrefab = Resources.Load("Agent") as GameObject;
         GameObject agent = Instantiate(agentPrefab);
@@ -186,7 +196,9 @@ public class AgentMsg : MonoBehaviour
                 Y = 0,
                 Z = UnityEngine.Random.Range((float)args[4], (float)args[5])};
         }
+        msg.Proto_Data.Query.Clear();
         return agent;
+        
     }
 
     // Use this for initialization
@@ -195,12 +207,12 @@ public class AgentMsg : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         agt = GetComponent<NavMeshAgent>();
     }
-
     private void FixedUpdate()
     {
         if (!rb.isKinematic)
         {
             _data_changed = true;
+            _proto.Data.Add(Agent_Data);
         }
     }
 }

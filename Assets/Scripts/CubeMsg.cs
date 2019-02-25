@@ -136,7 +136,7 @@ public class CubeMsg : MonoBehaviour {
     }
 
     static public
-        GameObject CreateCube(Cube c_proto)
+    GameObject CreateCube(Cube c_proto)
     {
         GameObject cubePrefab = Resources.Load("Cube") as GameObject;
         GameObject cube = Instantiate(cubePrefab);
@@ -145,10 +145,5 @@ public class CubeMsg : MonoBehaviour {
         cube.name = "cube_" + c_proto.Id.ToBase64();
         
         return cube;
-    }
-
-    // Use this for initialization
-    void Start ()
-    {
     }
 }
