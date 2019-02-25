@@ -148,7 +148,7 @@ public class CubeMsg : MonoBehaviour {
         cube.name = "cube_" + c_proto.Id.ToBase64();
         raven.Preupdate.CubeReqUpdate.Add(c_proto.Id.ToBase64(), msg.OnReqUpdate);
         raven.Postupdate.RepUpdate += msg.OnRepUpdate;
-        cube.transform.parent = raven.transform;
+        cube.transform.parent = raven.ObstacleGroupT;
         return msg;
     }
 }

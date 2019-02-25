@@ -12,6 +12,8 @@ public class AgentMsg : MonoBehaviour
     protected Rigidbody rb;
     protected NavMeshAgent agt;
 
+    [SerializeField] bool _show_target;
+
     public Vec3 Velocity
     {
         get
@@ -191,7 +193,8 @@ public class AgentMsg : MonoBehaviour
         msg.agt = agent.GetComponent<NavMeshAgent>() as NavMeshAgent;
         msg.Proto_Data = a_proto;
         agent.name = (a_proto.Nickname == null) ? a_proto.Nickname : "Agent_"+a_proto.Id.ToBase64();
-        
+        agent.transform.parent = raven.AgentGroupT;
+                
         if (a_proto.Query.Count > 0)
         {
             var args = (from query in a_proto.Query
@@ -214,6 +217,7 @@ public class AgentMsg : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         agt = GetComponent<NavMeshAgent>();
+        rb.isKinematic = true;
     }
     private void FixedUpdate()
     {
@@ -221,6 +225,10 @@ public class AgentMsg : MonoBehaviour
         {
             _data_changed = true;
             _proto.Data.Add(Agent_Data);
+        }
+        if (_show_target)
+        {
+            Debug.DrawLine(transform.localPosition, agt.destination);
         }
     }
 }

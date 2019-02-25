@@ -13,12 +13,22 @@ public class Raven : MonoBehaviour
     private SpinServer server;
     public PreWorldUpdate Preupdate;
     public PostWorldUpdate Postupdate;
-    public NavMeshData m_NavMesh;
+    [SerializeField] private NavMeshData m_NavMesh;
+    [SerializeField] private GameObject _agent_group;
+    [SerializeField] private GameObject _obs_group;
     private NavMeshDataInstance m_NavMeshInstance;
     Vector3 BoundsCenter = Vector3.zero;
     Vector3 BoundsSize = new Vector3(999999f, 4000f, 999999f);
 
     public World ReqWorld, RepWorld;
+    public Transform AgentGroupT
+    {
+        get { return _agent_group.transform; }
+    }
+    public Transform ObstacleGroupT
+    {
+        get { return _obs_group.transform; }
+    }
 
     // Use this for initialization
     private void Start()
@@ -32,7 +42,6 @@ public class Raven : MonoBehaviour
         m_NavMeshInstance = NavMesh.AddNavMeshData(m_NavMesh);
         server.Start();
     }
-
     private void HandleReq(byte[] reqproto)
     {
         ReqWorld = World.Parser.ParseFrom(reqproto);
@@ -92,7 +101,6 @@ public class Raven : MonoBehaviour
         }
 
     }
-
     private void HandleRep(out byte[] repproto)
     {
         RepWorld = new World()
