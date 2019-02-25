@@ -228,7 +228,7 @@ public class AgentMsg : MonoBehaviour
         }
         if (_show_target)
         {
-            Debug.DrawLine(transform.localPosition, agt.destination);
+            Debug.DrawLine(transform.position, agt.destination);
         }
     }
 }

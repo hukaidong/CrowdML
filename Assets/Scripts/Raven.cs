@@ -13,10 +13,10 @@ public class Raven : MonoBehaviour
     private SpinServer server;
     public PreWorldUpdate Preupdate;
     public PostWorldUpdate Postupdate;
-    [SerializeField] private NavMeshData m_NavMesh;
+    [SerializeField] private readonly NavMeshData m_NavMesh;
     [SerializeField] private GameObject _agent_group;
     [SerializeField] private GameObject _obs_group;
-    private NavMeshDataInstance m_NavMeshInstance;
+    public NavMeshDataInstance m_NavMeshInstance;
     Vector3 BoundsCenter = Vector3.zero;
     Vector3 BoundsSize = new Vector3(999999f, 4000f, 999999f);
 
@@ -47,8 +47,15 @@ public class Raven : MonoBehaviour
         ReqWorld = World.Parser.ParseFrom(reqproto);
         Config_Type gconfig = ReqWorld.Config;
         if (gconfig == Config_Type.Reset)
-        { 
-            Application.Quit();
+        {
+            Destroy(_agent_group);
+            Destroy(_obs_group);
+            _agent_group = Instantiate(new GameObject());
+            _agent_group.name = "Agents";
+            _agent_group.transform.parent = transform;
+            _obs_group = Instantiate(new GameObject());
+            _obs_group.name = "Obstacles";
+            _obs_group.transform.parent = transform;
         }
         else
         {
