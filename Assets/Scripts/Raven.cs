@@ -13,7 +13,7 @@ public class Raven : MonoBehaviour
     private SpinServer server;
     public PreWorldUpdate Preupdate;
     public PostWorldUpdate Postupdate;
-    [SerializeField] private readonly NavMeshData m_NavMesh;
+    [SerializeField] private NavMeshData m_NavMesh;
     [SerializeField] private GameObject _agent_group;
     [SerializeField] private GameObject _obs_group;
     public NavMeshDataInstance m_NavMeshInstance;
