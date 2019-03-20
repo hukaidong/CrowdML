@@ -16,6 +16,16 @@ public class AgentMsg : MonoBehaviour
 
     [SerializeField] bool _show_target;
 
+    public Vec3 Force
+    {
+        set
+        {
+            if (value == null) { return; }
+            Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
+            rb.AddForce(temp);
+            _data_changed = true;
+        }
+    }
     public Vec3 Velocity
     {
         get
@@ -111,6 +121,7 @@ public class AgentMsg : MonoBehaviour
             Location = value.Location != null && value.Location.HasValue ? value.Location : Location;
             Forwards = value.Forwards != null && value.Forwards.HasValue ? value.Forwards : Forwards;
             Target = value.Target != null && value.Target.HasValue ? value.Target : Target;
+            Force = value.Force != null && value.Force.HasValue ? value.Force : null;
         }
 
     }
