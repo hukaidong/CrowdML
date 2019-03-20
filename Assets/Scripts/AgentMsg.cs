@@ -2,7 +2,9 @@
 using UnityEngine.AI;
 using CrowdWorld.Proto;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Configuration;
 
 public class AgentMsg : MonoBehaviour
 {
@@ -117,7 +119,7 @@ public class AgentMsg : MonoBehaviour
         get { return _proto; }
         set {
             _proto = value;
-            Agent_Data = value.Data.Last();
+            Agent_Data = value.Data;
         }
     }
 
@@ -162,7 +164,7 @@ public class AgentMsg : MonoBehaviour
                     Id = _proto.Id,
                     Timestamp = Time.frameCount
                 };
-                temp.Data.Add(Agent_Data);
+                temp.Data = Agent_Data;
                 world.Agents.Add(temp);
                 break;
             case Config_Type.History:
@@ -192,41 +194,44 @@ public class AgentMsg : MonoBehaviour
         msg.rb = agent.GetComponent<Rigidbody>() as Rigidbody;
         msg.agt = agent.GetComponent<NavMeshAgent>() as NavMeshAgent;
         msg.Proto_Data = a_proto;
-        agent.name = (a_proto.Nickname == null) ? a_proto.Nickname : "Agent_"+a_proto.Id.ToBase64();
+        agent.name = (a_proto.Nickname == null) ? a_proto.Nickname : "Agent_"+a_proto.Id.Substring(0, 6);
         agent.transform.parent = raven.AgentGroupT;
-                
-        if (a_proto.Query.Count > 0)
-        {
-            var args = (from query in a_proto.Query
-                       where query.Name == "regionBounds" select query.Args)
-                       .First();
-            Debug.DrawLine(
-                new Vector3((float)args[0], 0, (float)args[4]), 
-                new Vector3((float)args[1], 0, (float)args[5]));
-            var randX = UnityEngine.Random.Range((float) args[0], (float) args[1]);
-            var randZ = UnityEngine.Random.Range((float)args[4], (float)args[5]);
-            msg.Location = new Vec3
-            {
-                X = randX,
-                Y = 2,
-                Z = randZ
-            };
-            Debug.DrawLine(msg.transform.position, msg.transform.position + Vector3.up);
-        }
 
-        if (true)
-        {
-            msg.rb.isKinematic = true;
-            msg.agt.ResetPath();
-            msg.agt.updatePosition = true;
-        }
-        msg.Proto_Data.Query.Clear();
-        raven.Preupdate.AgentReqUpdate.Add(a_proto.Id.ToBase64(), msg.OnReqUpdate);
+        Dictionary<string, Action < QueryArgs >> ReqFunc = new Dictionary<string, Action<QueryArgs>>();
+        ReqFunc.Add("agentRegion.regionBound", msg.AgentRegion_RegionBound);
+
+        foreach (string Q in ReqFunc.Keys)
+            if (a_proto.Queries.ContainsKey(Q))
+            {
+                ReqFunc[Q](a_proto.Queries[Q]);
+                a_proto.Queries.Remove(Q);
+            }
+
+#if true
+        msg.rb.isKinematic = true;
+        msg.agt.ResetPath();
+        msg.agt.updatePosition = true;
+#endif
+
+        raven.Preupdate.AgentReqUpdate.Add(a_proto.Id, msg.OnReqUpdate);
         raven.Postupdate.RepUpdate += msg.OnRepUpdate; 
         return msg;
         
     }
 
+    void AgentRegion_RegionBound(QueryArgs Q)
+    {
+        var args = Q.Args;
+        var randX = UnityEngine.Random.Range((float)args[0], (float)args[1]);
+        var randZ = UnityEngine.Random.Range((float)args[4], (float)args[5]);
+        Location = new Vec3
+        {
+            X = randX,
+            Y = 2,
+            Z = randZ
+        };
+
+    }
     // Use this for initialization
     void Start()
     {
@@ -239,7 +244,7 @@ public class AgentMsg : MonoBehaviour
         if (!rb.isKinematic)
         {
             _data_changed = true;
-            _proto.Data.Add(Agent_Data);
+            _proto.Data = Agent_Data;
         }
         if (_show_target)
         {

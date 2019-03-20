@@ -9,7 +9,7 @@ public class PreWorldUpdate : MonoBehaviour {
     public Dictionary<string, ReqUpdateHandler<Agent>> AgentReqUpdate;
     public virtual void OnAgtReqUpdate(Agent agt)
     {
-        AgentReqUpdate[agt.Id.ToBase64()]?.Invoke(agt);
+        AgentReqUpdate[agt.Id]?.Invoke(agt);
     }
     public Dictionary<string, ReqUpdateHandler<Cube>> CubeReqUpdate;
     public virtual void OnCubeReqUpdate(Cube cube)
