@@ -200,10 +200,25 @@ public class AgentMsg : MonoBehaviour
             var args = (from query in a_proto.Query
                        where query.Name == "regionBounds" select query.Args)
                        .First();
-            msg.Location = new Vec3 {
-                X = UnityEngine.Random.Range((float)args[0], (float)args[1]),
-                Y = 0,
-                Z = UnityEngine.Random.Range((float)args[4], (float)args[5])};
+            Debug.DrawLine(
+                new Vector3((float)args[0], 0, (float)args[4]), 
+                new Vector3((float)args[1], 0, (float)args[5]));
+            var randX = UnityEngine.Random.Range((float) args[0], (float) args[1]);
+            var randZ = UnityEngine.Random.Range((float)args[4], (float)args[5]);
+            msg.Location = new Vec3
+            {
+                X = randX,
+                Y = 2,
+                Z = randZ
+            };
+            Debug.DrawLine(msg.transform.position, msg.transform.position + Vector3.up);
+        }
+
+        if (true)
+        {
+            msg.rb.isKinematic = true;
+            msg.agt.ResetPath();
+            msg.agt.updatePosition = true;
         }
         msg.Proto_Data.Query.Clear();
         raven.Preupdate.AgentReqUpdate.Add(a_proto.Id.ToBase64(), msg.OnReqUpdate);
@@ -217,7 +232,7 @@ public class AgentMsg : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         agt = GetComponent<NavMeshAgent>();
-        rb.isKinematic = true;
+        agt.updatePosition = false;
     }
     private void FixedUpdate()
     {
