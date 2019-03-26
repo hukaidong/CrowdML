@@ -11,6 +11,7 @@ public class AgentMsg : MonoBehaviour
     private Agent _proto;
     private bool _data_changed;
     private Agent_Data _detailchanged;
+    private GameObject targetObj;
     protected Rigidbody rb;
     protected NavMeshAgent agt;
 
@@ -98,7 +99,7 @@ public class AgentMsg : MonoBehaviour
         set
         {
             Vector3 temp = new Vector3((float)value.X, (float)value.Y, (float)value.Z);
-            agt.destination = temp;
+            targetObj.transform.position = temp;
             _data_changed = true;
         }
     }
@@ -162,7 +163,6 @@ public class AgentMsg : MonoBehaviour
     }
     public void OnRepUpdate(ref World world)
     {
-        Debug.Log("Agent Fire!");
         switch (_proto.Config)
         {
             case Config_Type.None:
@@ -200,8 +200,11 @@ public class AgentMsg : MonoBehaviour
     static public AgentMsg CreateAgent(Raven raven, Agent a_proto)
     {
         GameObject agentPrefab = Resources.Load("Agent") as GameObject;
+        GameObject targetPrefab = Resources.Load("Cube") as GameObject;
         GameObject agent = Instantiate(agentPrefab);
         AgentMsg msg = agent.AddComponent<AgentMsg>() as AgentMsg;
+        msg.targetObj = Instantiate(targetPrefab);
+        msg.targetObj.transform.parent = msg.transform;
         msg.rb = agent.GetComponent<Rigidbody>() as Rigidbody;
         msg.agt = agent.GetComponent<NavMeshAgent>() as NavMeshAgent;
         msg.Proto_Data = a_proto;
@@ -220,7 +223,6 @@ public class AgentMsg : MonoBehaviour
 
 #if true
         msg.rb.isKinematic = true;
-        msg.agt.ResetPath();
         msg.agt.updatePosition = true;
 #endif
 

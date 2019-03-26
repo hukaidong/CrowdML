@@ -46,18 +46,19 @@ public class Raven : MonoBehaviour
     {
         ReqWorld = World.Parser.ParseFrom(reqproto);
         Config_Type gconfig = ReqWorld.Config;
-        if (gconfig == Config_Type.Reset)
+        if (gconfig == Config_Type.Reset || gconfig == Config_Type.Create)
         {
             Destroy(_agent_group);
             Destroy(_obs_group);
-            _agent_group = Instantiate(new GameObject());
+            _agent_group = new GameObject();
             _agent_group.name = "Agents";
             _agent_group.transform.parent = transform;
-            _obs_group = Instantiate(new GameObject());
+            _obs_group = new GameObject();
             _obs_group.name = "Obstacles";
             _obs_group.transform.parent = transform;
         }
-        else
+
+        do
         {
             foreach (Cube cube in ReqWorld.Cubes)
             {
@@ -74,20 +75,21 @@ public class Raven : MonoBehaviour
                         break;
                 }
             }
+
             {
                 List<NavMeshBuildMarkup> sources = new List<NavMeshBuildMarkup>();
                 List<NavMeshBuildSource> m_Sources = new List<NavMeshBuildSource>();
                 NavMeshBuilder.CollectSources(
-                    new Bounds(BoundsCenter,BoundsSize),
-                    LayerMask.NameToLayer("Everything"), 
+                    new Bounds(BoundsCenter, BoundsSize),
+                    LayerMask.NameToLayer("Everything"),
                     NavMeshCollectGeometry.RenderMeshes,
-                    0, sources , m_Sources);
+                    0, sources, m_Sources);
                 NavMeshBuilder.UpdateNavMeshData(
                     m_NavMesh,
                     NavMesh.GetSettingsByID(0),
                     m_Sources,
                     new Bounds(BoundsCenter, BoundsSize)
-                    );
+                );
             }
             foreach (Agent agt in ReqWorld.Agents)
             {
@@ -103,9 +105,10 @@ public class Raven : MonoBehaviour
                         Preupdate.OnAgtReqUpdate(agt);
                         break;
                 }
+
                 Preupdate.OnAgtReqUpdate(agt);
             }
-        }
+        } while (false);
 
     }
     private void HandleRep(out byte[] repproto)
